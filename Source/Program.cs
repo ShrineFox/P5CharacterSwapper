@@ -72,8 +72,8 @@ namespace P5FileRenamer
             }
 
             //Get the model ID from first model from each folder
-            string cOneId = Path.GetFileName(cOneModels.ElementAt(0)).TrimStart(new Char[] { 'c' }).Remove(4,11);
-            string cTwoId = Path.GetFileName(cTwoModels.ElementAt(0)).TrimStart(new Char[] { 'c' }).Remove(4, 11);
+            string cOneId = P5.GetCharacterId(cOneDir);
+            string cTwoId = P5.GetCharacterId(cTwoDir);
 
             //Get ready to compare
             string renFolder = cOneDir + "\\" + cOneId +"_renamed";
@@ -109,28 +109,9 @@ namespace P5FileRenamer
             int gapCount = Directory.EnumerateFiles(@cTwoDir, "*.GAP", SearchOption.AllDirectories).Where(d => !d.Contains("renamed") && !d.Contains("life")).Count();
             int renCount = 0;
             int procCount = 1; //Ignore GAP file in character's model directory
-            //Get the model ID from first model from each folder
-            List<string> cOneModels = new List<string>();
-            foreach (string modelFile in Directory.GetFiles(@cOneDir))
-            {
-                bool isGMD = (modelFile.Contains(".GMD"));
-                if (isGMD == true)
-                {
-                    cOneModels.Add(modelFile);
-                }
-            }
-            List<string> cTwoModels = new List<string>();
-            foreach (string modelFile in Directory.GetFiles(@cTwoDir))
-            {
-                bool isGMD = (modelFile.Contains(".GMD"));
-                if (isGMD == true)
-                {
-                    cTwoModels.Add(modelFile);
-                }
-            }
-            //Get IDs from models and name directories after them
-            string cOneId = Path.GetFileName(cOneModels.ElementAt(0)).TrimStart(new Char[] { 'c' }).Remove(4, 11);
-            string cTwoId = Path.GetFileName(cTwoModels.ElementAt(0)).TrimStart(new Char[] { 'c' }).Remove(4, 11);
+
+            string cOneId = P5.GetCharacterId(cOneDir);
+            string cTwoId = P5.GetCharacterId(cTwoDir);
             string newBattle = cOneDir + "\\" + cOneId + "_renamed\\battle";
             string newEvent = cOneDir + "\\" + cOneId + "_renamed\\event";
             string newField = cOneDir + "\\" + cOneId + "_renamed\\field";
@@ -274,6 +255,15 @@ namespace P5FileRenamer
             Console.SetCursorPosition(0, Console.CursorTop);
             Console.Write(new string(' ', Console.WindowWidth));
             Console.SetCursorPosition(0, currentLineCursor);
+        }
+
+        public static class P5
+        {
+            public static string GetCharacterId(string charaPath = "")
+            {
+                string charaId = new DirectoryInfo(charaPath).Name;
+                return charaId;
+            }
         }
 
 
