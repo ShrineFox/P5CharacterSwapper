@@ -5,6 +5,7 @@ Can retarget models and animations if specified, or fallback to a certain GMD.
 
 Uses TGE's [GFDLibrary](https://github.com/ShrineFox/P5CharacterSwapper/releases) and [SimpleCommandLine](https://github.com/TGEnigma/SimpleCommandLine). No input files will be overwritten.
 
+![](https://i.imgur.com/mePBYGB.png)
 # Using
 1. Download the [latest release](https://github.com/ShrineFox/P5CharacterSwapper/releases). 
 2. Run P5CharacterSwapper.exe from the command prompt to see options.
