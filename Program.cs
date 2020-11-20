@@ -78,10 +78,20 @@ namespace P5CharacterSwapper
                         //Delete new gap if it exists
                         if (File.Exists(newDestination))
                             File.Delete(newDestination);
+                        
                         if (Options.GAP.Replace)
                         {
                             //Copy gap to new location
                             File.Copy(Input.newAnims[x], newDestination);
+                            Console.WriteLine($"Copying {Path.GetFileName(Input.newAnims[x])} to replace {Path.GetFileName(Input.ogAnims[i])}");
+                        }
+                        else if (Options.GAP.Retarget)
+                        {
+                            //Save new retargeted gap
+                            var animationPack = Resource.Load<AnimationPack>(Input.ogAnims[i]);
+                            animationPack.Retarget(ogCharDefaultModel.Model, newCharDefaultModel.Model, Options.GAP.FixArms);
+                            animationPack.Save(newDestination);
+                            Console.WriteLine($"Retargeting {Path.GetFileName(Input.ogAnims[i])} comparing {Path.GetFileName(Input.ogDefaultModel)} to {Path.GetFileName(Input.newDefaultModel)}");
                         }
                     }
                 }
@@ -94,6 +104,7 @@ namespace P5CharacterSwapper
                     var animationPack = Resource.Load<AnimationPack>(Input.ogAnims[i]);
                     animationPack.Retarget(ogCharDefaultModel.Model, newCharDefaultModel.Model, Options.GAP.FixArms);
                     animationPack.Save(newDestination);
+                    Console.WriteLine($"Retargeting {Path.GetFileName(Input.ogDefaultModel)} to {Path.GetFileName(Input.ogAnims[i])}");
                 }
             }
         }
@@ -180,7 +191,7 @@ namespace P5CharacterSwapper
                 [Option("r", "replace", "boolean", "Replaces animation packs with matching IDs. Works well when not retargeting models.\nNon-matches will be left alone, unless using --rt.")]
                 public bool Replace { get; set; } = true;
 
-                [Option("rt", "retarget", "boolean", "Retargets animation packs with matching IDs.\nNon-matches will be retargeted using the default GMD.")]
+                [Option("rt", "retarget", "boolean", "Retargets new character's non-matching animation packs to the original character's model.\nUses the default GMD ID for retargeting.")]
                 public bool Retarget { get; set; } = false;
 
                 [Option("a", "fix-arms", "boolean", "Rotates arm bones 45 degrees when retargeting animations. Useful when replacing characters in a T-pose with characters in an A-pose.")]
