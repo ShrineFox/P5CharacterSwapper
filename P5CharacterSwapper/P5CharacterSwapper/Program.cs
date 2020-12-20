@@ -40,19 +40,71 @@ namespace P5CharacterSwapper
             Input.ogAnims = Directory.GetFiles(Options.Old, "*.GAP", SearchOption.AllDirectories);
             Input.newAnims = Directory.GetFiles(Options.New, "*.GAP", SearchOption.AllDirectories);
             Input.retargetFolder = $"{ Options.New} Retargeted to {Path.GetFileName(Options.Old)}";
-            Input.ogDefaultModel = Path.Combine(Options.New, $"c{Path.GetFileName(Options.New)}_{Options.DefaultGMDId.ToString("D3")}_00.GMD");
-            Input.newDefaultModel = Path.Combine(Options.Old, $"c{Path.GetFileName(Options.Old)}_{Options.DefaultGMDId.ToString("D3")}_00.GMD");
+            string defaultGMDId = Options.DefaultGMDId.ToString("D3");
+            string newModelDefaultGMD = Path.Combine(Options.New, $"c{Path.GetFileName(Options.New)}_{defaultGMDId}_00.GMD");
+            string ogModelDefaultGMD = Path.Combine(Options.Old, $"c{Path.GetFileName(Options.Old)}_{defaultGMDId}_00.GMD");
+            //Try to get default GMD for new model
+            if (!File.Exists(newModelDefaultGMD))
+            {
+                //Fall back to 051 or 001 if they exist, otherwise use first available mmodel
+                if (!File.Exists(newModelDefaultGMD))
+                {
+                    if (Input.newModels.Any(x => x.Contains("_051_")))
+                        newModelDefaultGMD = Input.newModels.FirstOrDefault(x => x.Contains("_051_"));
+                    else if (Input.newModels.Any(x => x.Contains("_000_")))
+                        newModelDefaultGMD = Input.newModels.FirstOrDefault(x => x.Contains("_000_"));
+                    else
+                        newModelDefaultGMD = Input.newModels.FirstOrDefault();
+                }
+            }
+            Input.newDefaultModel = newModelDefaultGMD;
+
+            //Try to get default GMD for old model
+            if (!File.Exists(ogModelDefaultGMD))
+            {
+                //Fall back to 051 or 001 if they exist, otherwise use first available mmodel
+                if (!File.Exists(ogModelDefaultGMD))
+                {
+                    if (Input.ogModels.Any(x => x.Contains("_051_")))
+                        ogModelDefaultGMD = Input.ogModels.FirstOrDefault(x => x.Contains("_051_"));
+                    else if (Input.ogModels.Any(x => x.Contains("_000_")))
+                        ogModelDefaultGMD = Input.ogModels.FirstOrDefault(x => x.Contains("_000_"));
+                    else
+                        ogModelDefaultGMD = Input.ogModels.FirstOrDefault();
+                }
+            }
+            Input.ogDefaultModel = ogModelDefaultGMD;
+
+            //Replacement models and animations output to new folder
             if (!Directory.Exists(Input.retargetFolder))
                 Directory.CreateDirectory(Input.retargetFolder);
+            if (Options.GMD.Replace || Options.GMD.Retarget)
+                ReplaceModels();
+            if (Options.GAP.Replace || Options.GAP.Retarget)
+                ReplaceAnimations();
+            if (Options.DeleteChunks)
+                RemoveChunks();
+        }
 
-            ReplaceModels();
-            ReplaceAnimations();
+        private static void RemoveChunks()
+        {
+            foreach(var gmd in Directory.GetFiles(Input.retargetFolder, "*.GMD", SearchOption.TopDirectoryOnly))
+            {
+                var modelPack = ModuleImportUtilities.ImportFile<ModelPack>(gmd);
+                var newModelPack = new ModelPack();
+                newModelPack.Version = modelPack.Version;
+                newModelPack.Textures = modelPack.Textures;
+                newModelPack.Materials = modelPack.Materials;
+                newModelPack.Model = modelPack.Model;
+                newModelPack.AnimationPack = modelPack.AnimationPack;
+                newModelPack.Save(gmd);
+            }
         }
 
         private static void ReplaceAnimations()
         {
-            var newCharDefaultModel = ModuleImportUtilities.ImportFile<ModelPack>(Input.ogDefaultModel);
-            var ogCharDefaultModel = ModuleImportUtilities.ImportFile<ModelPack>(Input.newDefaultModel);
+            var newCharDefaultModel = ModuleImportUtilities.ImportFile<ModelPack>(Input.newDefaultModel);
+            var ogCharDefaultModel = ModuleImportUtilities.ImportFile<ModelPack>(Input.ogDefaultModel);
             for (int i = 0; i < Input.ogAnims.Length; i++)
             {
                 bool foundMatch = false;
@@ -78,7 +130,7 @@ namespace P5CharacterSwapper
                         //Delete new gap if it exists
                         if (File.Exists(newDestination))
                             File.Delete(newDestination);
-                        
+
                         if (Options.GAP.Replace)
                         {
                             //Copy gap to new location
@@ -139,7 +191,7 @@ namespace P5CharacterSwapper
                     }
                 }
                 if (!foundMatch)
-                {                    
+                {
                     if (Options.GMD.Retarget)
                     {
                         //Retarget default model
@@ -170,6 +222,8 @@ namespace P5CharacterSwapper
             [Option("id", "default id", "integer", "When specified, the new character's GMD with a matching minor ID directory will be used for replacing/retargeting non-matching models. Otherwise, 051 is used (default battle model).")]
             public int DefaultGMDId { get; set; } = 51;
 
+            [Option("d", "delete-chunks", "boolean", "When specified, new GMDs won't contain any physics chunks.")]
+            public bool DeleteChunks { get; set; } = false;
 
             [Group("gmd")]
             public GMDOptions GMD { get; set; }
@@ -177,10 +231,10 @@ namespace P5CharacterSwapper
             public class GMDOptions
             {
                 [Option("r", "replace", "boolean", "Replaces models with matching IDs.\nNon-matches will be replaced by the Default GMD (and retargeted if using --rt).")]
-                public bool Replace { get; set; }
+                public bool Replace { get; set; } = false;
 
                 [Option("rt", "retarget", "boolean", "Retarget models with matching IDs. This improves compatibility with the original character's animations, but may break the new character's animations.\nNon-matches will be replaced/retargeted by the Default GMD.")]
-                public bool Retarget { get; set; }
+                public bool Retarget { get; set; } = false;
             }
 
             [Group("gap")]
@@ -189,7 +243,7 @@ namespace P5CharacterSwapper
             public class GAPOptions
             {
                 [Option("r", "replace", "boolean", "Replaces animation packs with matching IDs. Works well when not retargeting models.\nNon-matches will be left alone, unless using --rt.")]
-                public bool Replace { get; set; } = true;
+                public bool Replace { get; set; } = false;
 
                 [Option("rt", "retarget", "boolean", "Retargets new character's non-matching animation packs to the original character's model.\nUses the default GMD ID for retargeting.")]
                 public bool Retarget { get; set; } = false;

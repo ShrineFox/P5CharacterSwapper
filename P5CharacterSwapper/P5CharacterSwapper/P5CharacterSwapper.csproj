@@ -4,7 +4,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{C0DFBB4E-0995-40E8-8FC3-274CF64AC019}</ProjectGuid>
+    <ProjectGuid>{BCC6777C-E114-4B6B-86EF-79EEB24FBA07}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <RootNamespace>P5CharacterSwapper</RootNamespace>
     <AssemblyName>P5CharacterSwapper</AssemblyName>
@@ -51,17 +51,17 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\SimpleCommandLine\Source\SimpleCommandLine\SimpleCommandLine.csproj">
-      <Project>{7a1f22a9-5eed-4f8d-a3c9-a99b8ecfacb0}</Project>
-      <Name>SimpleCommandLine</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\GFDLibrary\GFDLibrary.csproj">
+    <ProjectReference Include="..\..\..\GFD-Studio\GFDLibrary\GFDLibrary.csproj">
       <Project>{a41ac644-a107-4788-8e4f-e10cca64f3b6}</Project>
       <Name>GFDLibrary</Name>
     </ProjectReference>
-    <ProjectReference Include="..\GFDStudio\GFDStudio.csproj">
+    <ProjectReference Include="..\..\..\GFD-Studio\GFDStudio\GFDStudio.csproj">
       <Project>{75d72552-d73f-47f9-bc26-a5c6be341901}</Project>
       <Name>GFDStudio</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\SimpleCommandLine\Source\SimpleCommandLine\SimpleCommandLine.csproj">
+      <Project>{7a1f22a9-5eed-4f8d-a3c9-a99b8ecfacb0}</Project>
+      <Name>SimpleCommandLine</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
